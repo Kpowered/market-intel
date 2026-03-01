@@ -265,110 +265,6 @@ class MarketIntelMonitor:
                 logger.error(f"主循环异常: {e}")
                 await asyncio.sleep(60)
 
-    def check_duplicate(self, title: str, content: str) -> bool:
-        """检查新闻是否与最近24h的新闻重复（语义相似度）"""
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.metrics.pairwise import cosine_similarity
-        
-        conn = sqlite3.connect(self.db_path)
-        c = conn.cursor()
-        
-        c.execute("""
-            SELECT title, content FROM news
-            WHERE created_at > datetime('now', '-24 hours')
-            ORDER BY created_at DESC
-            LIMIT 50
-        """)
-        
-        recent_news = c.fetchall()
-        conn.close()
-        
-        if not recent_news:
-            return False
-        
-        current_text = f"{title} {content[:200]}"
-        history_texts = [f"{t} {c[:200]}" for t, c in recent_news]
-        
-        try:
-            vectorizer = TfidfVectorizer(max_features=100)
-            all_texts = [current_text] + history_texts
-            tfidf_matrix = vectorizer.fit_transform(all_texts)
-            similarities = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
-            max_similarity = similarities.max() if len(similarities) > 0 else 0
-            
-            if max_similarity > 0.7:
-                logger.info(f"[去重] 相似度 {max_similarity:.2f}: {title[:30]}...")
-                return True
-        except Exception as e:
-            logger.error(f"[去重] 异常: {e}")
-            
-        return False
-
-    def is_quiet_hours(self) -> bool:
-        """检查是否在静音时段（23:00-08:00）"""
-        from datetime import datetime
-        hour = datetime.now().hour
-        return hour >= 23 or hour < 8
-
-    async def health_check(self):
-        """健康检查：RSS源可用性"""
-        failed_feeds = []
-        
-        for feed in self.config["rss_feeds"]:
-            try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(feed["url"], timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                        if resp.status != 200:
-                            failed_feeds.append(feed["name"])
-            except Exception as e:
-                failed_feeds.append(feed["name"])
-                logger.error(f"[健康检查] {feed[name]} 失败: {e}")
-        
-        if failed_feeds:
-            alert = f"⚠️ <b>RSS源异常</b>\n\n以下源无法访问：\n" + "\n".join([f"• {name}" for name in failed_feeds])
-            await self.send_telegram(alert, "urgent")
-            logger.warning(f"[健康检查] {len(failed_feeds)} 个源失败")
-        else:
-            logger.info("[健康检查] 所有RSS源正常")
-
-    async def check_price_alerts(self):
-        """价格异动监控（黄金/BTC）"""
-        alerts = []
-        
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get("https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1d&range=5d") as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        prices = data["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-                        current = prices[-1]
-                        prev = prices[-2]
-                        change_pct = ((current - prev) / prev) * 100
-                        
-                        if abs(change_pct) > 2:
-                            direction = "暴涨" if change_pct > 0 else "暴跌"
-                            alerts.append(f"🟡 黄金{direction} {abs(change_pct):.2f}%，当前 ${current:.2f}/盎司")
-                
-                async with session.get("https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?interval=1d&range=5d") as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        prices = data["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-                        current = prices[-1]
-                        prev = prices[-2]
-                        change_pct = ((current - prev) / prev) * 100
-                        
-                        if abs(change_pct) > 5:
-                            direction = "暴涨" if change_pct > 0 else "暴跌"
-                            alerts.append(f"🔴 BTC{direction} {abs(change_pct):.2f}%，当前 ${current:,.0f}")
-        
-        except Exception as e:
-            logger.error(f"[价格监控] 异常: {e}")
-        
-        for alert in alerts:
-            await self.send_telegram(alert, "urgent")
-            logger.info(f"[价格监控] {alert}")
-
-
 if __name__ == "__main__":
     monitor = MarketIntelMonitor()
     asyncio.run(monitor.run())
@@ -425,7 +321,7 @@ if __name__ == "__main__":
         # 获取最近24h的新闻
         c.execute("""
             SELECT title, content FROM news
-            WHERE created_at > datetime('now', '-24 hours')
+            WHERE created_at > datetime(now, -24 hours)
             ORDER BY created_at DESC
             LIMIT 50
         """)
