@@ -212,10 +212,6 @@ class MarketIntelMonitor:
                 message = f"<b>[{source}]</b>\n\n💡 {analysis}\n\n原标题: {title}\n{url}"
             else:
                 message = f"<b>[{source}]</b> {title}\n{url}"
-            # 静音时段检查（紧急新闻除外）
-            if priority != 'urgent' and self.is_quiet_hours():
-                logger.info(f"[静音] 延迟推送: {title[:30]}...")
-                continue
             
             await self.send_telegram_with_retry(message, priority)
 
