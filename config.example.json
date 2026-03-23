@@ -1,19 +1,23 @@
 {
-  "telegram": {
-    "api_id": "YOUR_API_ID",
-    "api_hash": "YOUR_API_HASH",
-    "phone": "YOUR_PHONE",
-    "channels": [],
-    "keywords": ["美联储", "加息", "降息", "战争", "制裁", "暴跌", "暴涨", "突发", "紧急", "Fed", "rate", "war", "sanction", "crash", "surge"]
-  },
   "rss_feeds": [
-    {"name": "FT中文网", "url": "http://www.ftchinese.com/rss/news"},
     {"name": "Bloomberg", "url": "https://feeds.bloomberg.com/markets/news.rss"},
     {"name": "CNBC", "url": "https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=10000664"},
     {"name": "MarketWatch", "url": "https://feeds.marketwatch.com/marketwatch/topstories/"},
     {"name": "WSJ Markets", "url": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"},
-    {"name": "Investing.com", "url": "https://www.investing.com/rss/news.rss"},
-    {"name": "ZeroHedge", "url": "https://feeds.feedburner.com/zerohedge/feed"}
+    {"name": "FT中文网", "url": "http://www.ftchinese.com/rss/news"},
+    {"name": "Reuters Business", "url": "https://www.reutersagency.com/feed/?best-topics=business-finance"},
+    {"name": "ZeroHedge", "url": "https://feeds.feedburner.com/zerohedge/feed"},
+
+    {"name": "Kitco Gold", "url": "https://www.kitco.com/rss/gold.xml"},
+    {"name": "GoldPrice", "url": "https://www.goldprice.org/rss"},
+    {"name": "OilPrice.com", "url": "https://oilprice.com/rss/main"},
+
+    {"name": "CoinDesk", "url": "https://www.coindesk.com/arc/outboundfeeds/rss/"},
+    {"name": "CoinTelegraph", "url": "https://cointelegraph.com/rss"},
+    {"name": "The Block", "url": "https://www.theblock.co/rss.xml"},
+    {"name": "Decrypt", "url": "https://decrypt.co/feed"},
+
+    {"name": "Trump Truth Social", "url": "https://rss.app/feeds/v1.1/ts9qLdDMCVhsJV3X.xml"}
   ],
   "ai": {
     "provider": "hyperapi",
@@ -27,8 +31,13 @@
   },
   "polling_interval": 300,
   "priority_levels": {
-    "urgent": ["战争", "制裁", "暴跌", "突发", "紧急", "war", "sanction", "crash", "strike", "attack"],
-    "important": ["美联储", "加息", "降息", "政策", "Fed", "rate", "policy", "inflation", "GDP"],
+    "urgent": ["战争", "制裁", "暴跌", "突发", "紧急", "崩盘", "熔断",
+               "war", "sanction", "crash", "strike", "attack", "invasion",
+               "emergency", "breaking", "halt", "circuit breaker"],
+    "important": ["美联储", "加息", "降息", "政策", "关税", "非农", "CPI", "通胀",
+                  "Fed", "rate", "policy", "inflation", "GDP", "tariff", "OPEC",
+                  "gold", "crude", "bitcoin", "ethereum", "crypto",
+                  "Trump", "特朗普"],
     "normal": []
   }
 }
